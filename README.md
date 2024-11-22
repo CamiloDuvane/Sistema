@@ -505,7 +505,7 @@ function generateLicense() {
         </div>
     ` : licenseType === 'semicolectivo' ? `
         <div class="license-back">
-            <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+            <div class="watermark"><img src="CMCM.jpg" alt="Logotipo do Município" width="15" height="15"></div>
             <div class="license-type-back">
                 <h3>Semi-Colectivo</h3>
                 <div class="route-info">
@@ -519,7 +519,7 @@ function generateLicense() {
         </div>
     ` : `
         <div class="license-back">
-            <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+            <div class="watermark"><img src="CMCM.jpg" alt="Logotipo do Município" width="15" height="15"></div>
             <div class="license-type-back">Serviços Autorizado:<br>${document.getElementById('licenseType').options[document.getElementById('licenseType').selectedIndex].text}</div>
             <div id="qrcode"></div>
         </div>
@@ -527,7 +527,7 @@ function generateLicense() {
 
     const licenseTemplate = `
         <div class="a6-preview">
-            <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+            <div class="watermark"><img src="CMCM.jpg" alt="Logotipo do Município" width="15" height="15"></div>
             <div class="license-header">
                 <div class="logo-placeholder"><img src="logo.png" alt="Logotipo do Município" width="50" height="50"></div>
                 <div class="municipality-info">
