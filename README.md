@@ -505,7 +505,7 @@ function generateLicense() {
         </div>
     ` : licenseType === 'semicolectivo' ? `
         <div class="license-back">
-            <div class="watermark"><img src="CMCM.png" alt="Logotipo do Município" width="15" height="15"></div>
+            <div class="watermark"><img src="CMCM.PNG" alt="Logotipo do Município" width="15" height="15"></div>
             <div class="license-type-back">
                 <h3>Semi-Colectivo</h3>
                 <div class="route-info">
