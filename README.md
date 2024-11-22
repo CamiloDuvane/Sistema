@@ -692,7 +692,7 @@ function printPaymentInfo() {
                     <div class="copy-label">CÓPIA</div>
                     <div class="payment-header">
                         <div class="logo-container">
-                            <img src="CMCM.jpg" alt="Logotipo do Município" width="60" height="60">
+                            <img src="CMCM.png" alt="Logotipo do Município" width="60" height="60">
                         </div>
                         <h3>MUNICÍPIO DE MAPUTO</h3>
                         <h4>CONSELHO MUNICIPAL</h4>
