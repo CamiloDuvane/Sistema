@@ -307,11 +307,55 @@ select[multiple] option:checked {
 .remove-via:hover {
     background: #cc0000;
 }
+.search-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-form input {
+    flex: 1;
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#searchResults {
+    margin-top: 20px;
+}
+
+.search-result-item {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.search-result-item h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.search-result-item p {
+    margin: 5px 0;
+    color: #34495e;
+}
 </style>
 <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, serverTimestamp, getDocs, doc, getDoc, query, where, or } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
   // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -527,6 +571,16 @@ select[multiple] option:checked {
         <p><strong>Contacto:</strong> ${contact}</p>
         <p><strong>NUIT:</strong> ${nuit}</p>
         <button onclick="printPaymentInfo()">Imprimir Informação de Pagamento</button>
+    </div>
+    <div class="search-section">
+        <h3>Pesquisar Licenças</h3>
+        <div class="search-form">
+            <div class="form-group">
+                <input type="text" id="searchInput" placeholder="Digite a matrícula ou número da licença">
+                <button onclick="searchLicenses()">Pesquisar</button>
+            </div>
+        </div>
+        <div id="searchResults"></div>
     </div>
 </div>
 <script>
@@ -1032,5 +1086,96 @@ function printPaymentInfo() {
     printWindow.print();
     printWindow.close();
 }
+
+async function searchLicenses() {
+    const searchInput = document.getElementById('searchInput').value.trim().toUpperCase();
+    const resultsDiv = document.getElementById('searchResults');
+    resultsDiv.innerHTML = '<p>Pesquisando...</p>';
+
+    if (!searchInput) {
+        resultsDiv.innerHTML = '<p>Por favor, insira um termo de pesquisa.</p>';
+        return;
+    }
+
+    try {
+        const licensesRef = collection(db, 'licenses');
+        const q = query(licensesRef, 
+            or(
+                where('plate', '==', searchInput),
+                where('licenseNumber', '==', searchInput)
+            )
+        );
+
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            resultsDiv.innerHTML = '<p>Nenhuma licença encontrada.</p>';
+            return;
+        }
+
+        let resultsHTML = '';
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            resultsHTML += `
+                <div class="search-result-item">
+                    <h4>Licença ${data.licenseNumber}</h4>
+                    <p><strong>Proprietário:</strong> ${data.ownerName}</p>
+                    <p><strong>Matrícula:</strong> ${data.plate}</p>
+                    <p><strong>Tipo de Licença:</strong> ${data.licenseType}</p>
+                    <p><strong>Marca:</strong> ${data.brand}</p>
+                    <p><strong>Data de Emissão:</strong> ${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString() : 'N/A'}</p>
+                    <button onclick="viewLicenseDetails('${doc.id}')">Ver Detalhes</button>
+                </div>
+            `;
+        });
+
+        resultsDiv.innerHTML = resultsHTML;
+
+    } catch (error) {
+        console.error("Error searching licenses: ", error);
+        resultsDiv.innerHTML = '<p>Erro ao pesquisar licenças. Por favor, tente novamente.</p>';
+    }
+}
+
+async function viewLicenseDetails(docId) {
+    try {
+        const docRef = doc(db, 'licenses', docId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // Fill the form with the license data
+            document.getElementById('licenseType').value = data.licenseType;
+            document.getElementById('licenseNumber').value = data.licenseNumber;
+            document.getElementById('ownerName').value = data.ownerName;
+            document.getElementById('address').value = data.address;
+            document.getElementById('plate').value = data.plate;
+            document.getElementById('brand').value = data.brand;
+            document.getElementById('grossWeight').value = data.grossWeight || '';
+            document.getElementById('capacity').value = data.capacity || '';
+            document.getElementById('route').value = data.route || '';
+            
+            // Update form fields based on license type
+            updateFormFields();
+            
+            // Generate license preview
+            generateLicenseDisplay();
+            
+            // Scroll to the form
+            document.querySelector('.license-form').scrollIntoView({ behavior: 'smooth' });
+        }
+    } catch (error) {
+        console.error("Error loading license details: ", error);
+        alert('Erro ao carregar detalhes da licença. Por favor, tente novamente.');
+    }
+}
+
+// Add event listener for search input to trigger search on Enter key
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchLicenses();
+    }
+});
 </script>
 </body></html>
