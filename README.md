@@ -5,12 +5,66 @@
 <style>
 body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;line-height: 1.4;margin: 0;padding: 20px;background: #f5f7fa;}
 .container {max-width: 1200px;margin: 0 auto;background: white;padding: 20px;box-shadow: 0 0 10px rgba(0,0,0,0.1);border-radius: 8px;}
-.license-form {margin-bottom: 20px;padding: 20px;border: 1px solid #ddd;border-radius: 4px;}
-.form-group {margin-bottom: 15px;}
-label {display: block;margin-bottom: 5px;font-weight: bold;}
-input, select {width: 100%;padding: 8px;border: 1px solid #ddd;border-radius: 4px;box-sizing: border-box;}
-button {background: #3498db;color: white;border: none;padding: 10px 20px;border-radius: 4px;cursor: pointer;margin-right: 10px;}
-button:hover {background: #2980b9;}
+.license-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 25px;
+}
+.license-form h2 {
+    grid-column: 1 / -1;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+    color: #2c3e50;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #34495e;
+    font-size: 14px;
+}
+input, select {
+    height: 40px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+select:focus, input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+.button-group {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 .preview {margin-top: 20px;padding: 20px;border: 1px dashed #ddd;}
 .payment-info {margin-top: 20px;padding: 15px;background: #f8f9fa;border-radius: 4px;border: 1px solid #ddd;}
 .payment-info h4 {margin-top: 0;color: #2c3e50;}
@@ -39,7 +93,11 @@ button:hover {background: #2980b9;}
         border: 2px solid darkgreen !important;outline: 2px solid #ffd700 !important;outline-offset: 2px !important;
         box-shadow: 0 0 0 6px darkred !important;-webkit-print-color-adjust: exact;print-color-adjust: exact;
     }
-    .license-back {position: absolute;top: 140mm;}
+    .license-back {
+        position: absolute;
+        top: 280mm; /* Change from 140mm to 280mm to move to third page */
+        page-break-before: always;
+    }
     .a6-preview *, .license-back * {visibility: visible;}
     .watermark {opacity: 0.1 !important;-webkit-print-color-adjust: exact;print-color-adjust: exact;}
     .payment-info {display: none;}
@@ -198,18 +256,124 @@ select[multiple] {
     height: 120px;
     padding: 8px;
 }
-
 select[multiple] option {
     padding: 4px;
     margin: 2px 0;
     border-radius: 2px;
 }
-
 select[multiple] option:checked {
     background-color: #3498db;
     color: white;
 }
+.selected-vias button:hover {
+    background: #ff0000 !important;
+    transform: scale(1.05);
+}
+.selected-vias li {
+    transition: all 0.3s ease;
+    background: white;
+    padding: 5px;
+    border-radius: 4px;
+    margin-bottom: 5px !important;
+}
+.selected-vias li:hover {
+    background: rgba(0,0,0,0.05);
+}
+.via-selection {
+    margin-top: 10px;
+}
+.via-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.via-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 5px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+.remove-via {
+    background: #ff4444;
+    color: white;
+    border: none;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.remove-via:hover {
+    background: #cc0000;
+}
 </style>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5gjkbcUrcnRVU_5pdFfjGsfKTNVi99fY",
+    authDomain: "alunos-9848d.firebaseapp.com",
+    projectId: "alunos-9848d",
+    storageBucket: "alunos-9848d.firebasestorage.app",
+    messagingSenderId: "697570485120",
+    appId: "1:697570485120:web:bf6eced55608a61bf3d765",
+    measurementId: "G-W5K72V6KTP"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Make the generateLicense function use the new Firebase syntax
+  window.generateLicense = async function() {
+    const nuit = document.getElementById('nuit').value;
+    
+    if (nuit.length < 9 || nuit.length > 12) {
+        alert('O NUIT deve ter entre 9 e 12 dígitos.');
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja gerar a licença? Por favor, verifique se todos os dados estão corretos.\n\nAdvertência: Após gerar a licença, os dados serão registrados no sistema.')) {
+        return;
+    }
+
+    document.getElementById('licenseNumber').value = generateLicenseNumber();
+    
+    const licenseData = {
+        licenseType: document.getElementById('licenseType').value,
+        licenseNumber: document.getElementById('licenseNumber').value,
+        ownerName: document.getElementById('ownerName').value,
+        address: document.getElementById('address').value,
+        plate: document.getElementById('plate').value,
+        brand: document.getElementById('brand').value,
+        grossWeight: document.getElementById('grossWeight').value,
+        capacity: document.getElementById('capacity').value,
+        route: document.getElementById('route').value,
+        via: Array.from(document.getElementById('via').selectedOptions).map(option => option.value),
+        paymentType: document.getElementById('paymentType').value,
+        bank: document.getElementById('bank').value,
+        account: document.getElementById('account').value,
+        amount: document.getElementById('amount').value,
+        reference: document.getElementById('reference').value,
+        contact: document.getElementById('contact').value,
+        nuit: nuit,
+        createdAt: serverTimestamp()
+    };
+
+    try {
+        const docRef = await addDoc(collection(db, 'licenses'), licenseData);
+        console.log("License saved with ID: ", docRef.id);
+        generateLicenseDisplay();
+    } catch (error) {
+        console.error("Error saving license: ", error);
+        alert('Erro ao salvar a licença. Por favor, tente novamente.');
+    }
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -253,6 +417,10 @@ select[multiple] option:checked {
         <div class="form-group">
             <label for="brand">Marca:</label>
             <input type="text" id="brand">
+        </div>
+        <div class="form-group" id="grossWeightGroup" style="display: none;">
+            <label for="grossWeight">Peso Bruto:</label>
+            <input type="text" id="grossWeight" placeholder="Em toneladas">
         </div>
         <div class="form-group">
             <label for="capacity">Lotação:</label>
@@ -325,11 +493,20 @@ select[multiple] option:checked {
         </div>
         <div class="form-group">
             <label for="contact">Contacto:</label>
-            <input type="text" id="contact" placeholder="(+258) " oninput="this.value = formatPhoneNumber(this.value)">
+            <input type="text" 
+                   id="contact" 
+                   placeholder="(+258) " 
+                   maxlength="16" 
+                   oninput="this.value = formatPhoneNumber(this.value)">
         </div>
         <div class="form-group">
             <label for="nuit">NUIT:</label>
-            <input type="text" id="nuit">
+            <input type="text" 
+                   id="nuit" 
+                   minlength="9" 
+                   maxlength="12" 
+                   pattern="[0-9]+" 
+                   oninput="this.value = validateNUIT(this.value)">
         </div>
         <div class="button-group">
             <button onclick="generateLicense()">Gerar Licença</button>
@@ -353,6 +530,14 @@ select[multiple] option:checked {
     </div>
 </div>
 <script>
+function validateNUIT(input) {
+    let nuit = input.replace(/\D/g, '');
+    if (nuit.length > 12) {
+        nuit = nuit.slice(0, 12);
+    }
+    return nuit;
+}
+
 function generateLicenseNumber() {
     const licenseType = document.getElementById('licenseType').value;
     const year = new Date().getFullYear();
@@ -390,7 +575,12 @@ function formatLicensePlate(input) {
 
 function formatPhoneNumber(input) {
     let phone = input.replace(/\D/g, '');
-    if (phone.length > 9) phone = phone.slice(0,9);
+    if (phone.startsWith('258')) {
+        phone = phone.slice(3);
+    }
+    if (phone.length > 10) {
+        phone = phone.slice(0, 10);
+    }
     return `(+258) ${phone}`;
 }
 
@@ -424,118 +614,183 @@ function updateFormFields() {
     const capacityGroup = document.querySelector('label[for="capacity"]').parentElement;
     const routeGroup = document.querySelector('label[for="route"]').parentElement;
     const viaGroup = document.querySelector('label[for="via"]').parentElement;
+    const grossWeightGroup = document.getElementById('grossWeightGroup');
+    
+    const isTaxiType = ['taxi', 'taxiMercadoria', 'taxiApp', 'motoTaxi'].includes(licenseType);
+    const isRouteType = ['semicolectivo', 'passageiros'].includes(licenseType);
     
     if (licenseType === 'camiao') {
         capacityGroup.style.display = 'none';
         routeGroup.style.display = 'none';
         viaGroup.style.display = 'block';
+        grossWeightGroup.style.display = 'block';
         viaGroup.querySelector('label').textContent = 'Vias Autorizadas:';
-        document.getElementById('via').multiple = true; // Enable multiple selection
+        document.getElementById('via').multiple = true;
+    } else if (isTaxiType) {
+        capacityGroup.style.display = 'block';
+        routeGroup.style.display = 'none';
+        viaGroup.style.display = 'none';
+        grossWeightGroup.style.display = 'none';
+        document.querySelector('label[for="capacity"]').textContent = 'Praça:';
+        updateTaxiStands();
     } else {
         capacityGroup.style.display = 'block';
-        routeGroup.style.display = 'block';
-        viaGroup.style.display = 'block';
-        viaGroup.querySelector('label').textContent = 'Via:';
-        document.getElementById('via').multiple = false; // Disable multiple selection
+        routeGroup.style.display = isRouteType ? 'block' : 'none';
+        viaGroup.style.display = isRouteType ? 'block' : 'none';
+        grossWeightGroup.style.display = 'none';
+        document.querySelector('label[for="capacity"]').textContent = 'Lotação:';
+        resetCapacityOptions();
     }
 }
 
-// Add event listener for license type changes
-document.getElementById('licenseType').addEventListener('change', updateFormFields);
+function updateTaxiStands() {
+    const capacitySelect = document.getElementById('capacity');
+    capacitySelect.innerHTML = `
+        <option value="1">Praça 1</option>
+        <option value="2">Praça 2</option>
+        <option value="3">Praça 3</option>
+    `;
+}
 
-// Call updateFormFields on page load to set initial state
+function resetCapacityOptions() {
+    const capacitySelect = document.getElementById('capacity');
+    capacitySelect.innerHTML = `
+        <option value="2">2 Lugares</option>
+        <option value="4">4 Lugares</option>
+        <option value="5">5 Lugares</option>
+        <option value="15">15 Lugares</option>
+        <option value="26">26 Lugares</option>
+        <option value="32">32 Lugares</option>
+        <option value="52">52 Lugares</option>
+    `;
+}
+
+document.getElementById('licenseType').addEventListener('change', updateFormFields);
 document.addEventListener('DOMContentLoaded', updateFormFields);
 
-function generateLicense() {
-    document.getElementById('licenseNumber').value = generateLicenseNumber();
-    const licenseType = document.getElementById('licenseType').value;
-    const licenseNumber = document.getElementById('licenseNumber').value;
-    const ownerName = document.getElementById('ownerName').value;
-    const address = document.getElementById('address').value;
-    const plate = document.getElementById('plate').value;
-    const brand = document.getElementById('brand').value;
-    const capacity = document.getElementById('capacity').value;
-    const route = document.getElementById('route').value;
-    const via = Array.from(document.getElementById('via').selectedOptions).map(option => option.value).join(', ');
-    const paymentType = document.getElementById('paymentType').value;
-    const bank = document.getElementById('bank').value;
-    const account = document.getElementById('account').value;
-    const amount = document.getElementById('amount').value;
-    const reference = document.getElementById('reference').value;
-    const contact = document.getElementById('contact').value;
-    const nuit = document.getElementById('nuit').value;
+function generateLicenseDisplay() {
     const preview = document.getElementById('licensePreview');
     
-    const licenseDetailsHtml = licenseType === 'camiao' ? `
-        <p><strong>Nome:</strong> ${ownerName}</p>
-        <p><strong>Endereço:</strong> ${address}</p>
-        <p><strong>Matrícula:</strong> ${plate}</p>
-        <p><strong>Marca:</strong> ${brand}</p>
-        <p><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString()}</p>
-        <p><strong>Validade:</strong> ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString()}</p>
-        <p style="text-align: center; margin-top: 10px;"><strong>O Director</strong></p>
-    ` : `
-        <p><strong>Nome:</strong> ${ownerName}</p>
-        <p><strong>Endereço:</strong> ${address}</p>
-        <p><strong>Matrícula:</strong> ${plate}</p>
-        <p><strong>Marca:</strong> ${brand}</p>
-        <p><strong>Lotação:</strong> ${capacity}</p>
-        <p><strong>Rota:</strong> ${route}</p>
-        <p><strong>Via:</strong> ${via}</p>
-        <p><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString()}</p>
-        <p><strong>Validade:</strong> ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString()}</p>
-        <p style="text-align: center; margin-top: 10px;"><strong>O Director</strong></p>
-    `;
+    const licenseDetailsHtml = (() => {
+        const baseDetails = `
+            <p><strong>Nome:</strong> ${document.getElementById('ownerName').value}</p>
+            <p><strong>Endereço:</strong> ${document.getElementById('address').value}</p>
+            <p><strong>Matrícula:</strong> ${document.getElementById('plate').value}</p>
+            <p><strong>Marca:</strong> ${document.getElementById('brand').value}</p>
+            ${document.getElementById('licenseType').value === 'camiao' ? `<p><strong>Peso Bruto:</strong> ${document.getElementById('grossWeight').value} toneladas</p>` : ''}
+            <p><strong>Data de Emissão:</strong> ${new Date().toLocaleDateString()}</p>
+            <p><strong>Validade:</strong> ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString()}</p>
+        `;
 
-    const licenseBackHtml = licenseType === 'camiao' ? `
-        <div class="license-back">
-            <div class="watermark"><img src="CMCM.png" alt="Logotipo do Município" width="15" height="15"></div>
-            <div class="license-type-back">
-                <h3>Licença de Camião</h3>
-                <div class="authorized-routes">
-                    <h4>Vias Autorizadas:</h4>
-                    <ul style="list-style: none; padding: 0; margin: 10px 0;">
-                        ${Array.from(document.getElementById('via').selectedOptions)
-                            .map(option => `<li style="margin: 5px 0;">${option.text}</li>`)
-                            .join('')}
-                    </ul>
-                </div>
+        const selectedVias = Array.from(document.getElementById('via').selectedOptions)
+            .map(option => option.text)
+            .join(' - ');
+
+        if (document.getElementById('licenseType').value === 'camiao') {
+            return baseDetails;
+        } else if (document.getElementById('licenseType').value === 'semicolectivo' || document.getElementById('licenseType').value === 'passageiros') {
+            return `
+                ${baseDetails}
+                <p><strong>Lotação:</strong> ${document.getElementById('capacity').value}</p>
+                <p><strong>Rota:</strong> ${document.getElementById('route').options[document.getElementById('route').selectedIndex].text}</p>
+                <p><strong>Vias:</strong> ${selectedVias}</p>
+            `;
+        } else {
+            return `
+                ${baseDetails}
+                <p><strong>Lotação:</strong> ${document.getElementById('capacity').value}</p>
+            `;
+        }
+    })();
+
+    const licenseBackHtml = (() => {
+        const allVias = Array.from(document.getElementById('via').selectedOptions)
+            .map(option => option.text)
+            .join(' - ');
+        
+        const importantNotice = `
+            <div style="position: absolute; bottom: 40px; left: 10px; right: 120px; text-align: justify; font-size: 8px; font-weight: bold; padding: 5px;">
+                A licença é intransferível e será considerada válida apenas quando apresentada em conjunto com o livrete oficial correspondente ao veículo ao qual está vinculada, garantindo a conformidade com as normas vigentes e evitando qualquer uso indevido.
             </div>
-            <div id="qrcode"></div>
-        </div>
-    ` : licenseType === 'semicolectivo' ? `
-        <div class="license-back">
-            <div class="watermark"><img src="CMCM.PNG" alt="Logotipo do Município" width="15" height="15"></div>
-            <div class="license-type-back">
-                <h3>Semi-Colectivo</h3>
-                <div class="route-info">
-                    <h4>Rota Autorizada:</h4>
-                    <p style="margin: 10px 0;">${document.getElementById('route').options[document.getElementById('route').selectedIndex].text}</p>
-                    <h4>Via:</h4>
-                    <p style="margin: 10px 0;">${document.getElementById('via').options[document.getElementById('via').selectedIndex].text}</p>
+        `;
+        
+        const isTaxiType = ['taxi', 'taxiMercadoria', 'taxiApp', 'motoTaxi'].includes(document.getElementById('licenseType').value);
+        const isRouteType = ['semicolectivo', 'passageiros'].includes(document.getElementById('licenseType').value);
+        
+        if (document.getElementById('licenseType').value === 'camiao') {
+            return `
+                <div class="license-back">
+                    <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+                    <div class="license-type-back">
+                        <h3>Licença de Camião</h3>
+                        <div class="authorized-routes">
+                            <h4>Vias Autorizadas:</h4>
+                            <p style="margin: 10px 0; line-height: 1.4;">${allVias}</p>
+                        </div>
+                    </div>
+                    ${importantNotice}
+                    <div id="qrcode"></div>
                 </div>
-            </div>
-            <div id="qrcode"></div>
-        </div>
-    ` : `
-        <div class="license-back">
-            <div class="watermark"><img src="CMCM.png" alt="Logotipo do Município" width="15" height="15"></div>
-            <div class="license-type-back">Serviços Autorizado:<br>${document.getElementById('licenseType').options[document.getElementById('licenseType').selectedIndex].text}</div>
-            <div id="qrcode"></div>
-        </div>
-    `;
+            `;
+        } else if (isRouteType) {
+            return `
+                <div class="license-back">
+                    <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+                    <div class="license-type-back">
+                        <h3>${document.getElementById('licenseType').options[document.getElementById('licenseType').selectedIndex].text}</h3>
+                        <div class="route-info">
+                            <h4>Rota Autorizada:</h4>
+                            <p style="margin: 10px 0;">${document.getElementById('route').options[document.getElementById('route').selectedIndex].text}</p>
+                            <h4>Vias Autorizadas:</h4>
+                            <p style="margin: 10px 0; line-height: 1.4;">${allVias}</p>
+                        </div>
+                    </div>
+                    ${importantNotice}
+                    <div id="qrcode"></div>
+                </div>
+            `;
+        } else if (isTaxiType) {
+            const pracaNumber = document.getElementById('capacity').value;
+            const taxiTypeName = document.getElementById('licenseType').options[document.getElementById('licenseType').selectedIndex].text;
+            return `
+                <div class="license-back">
+                    <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+                    <div class="license-type-back">
+                        <h3>${taxiTypeName}</h3>
+                        <div class="taxi-info">
+                            <h4>Praça Autorizada:</h4>
+                            <p style="margin: 10px 0;">Praça ${pracaNumber}</p>
+                        </div>
+                    </div>
+                    ${importantNotice}
+                    <div id="qrcode"></div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="license-back">
+                    <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
+                    <div class="license-type-back">
+                        <h3>${document.getElementById('licenseType').options[document.getElementById('licenseType').selectedIndex].text}</h3>
+                    </div>
+                    ${importantNotice}
+                    <div id="qrcode"></div>
+                </div>
+            `;
+        }
+    })();
 
     const licenseTemplate = `
         <div class="a6-preview">
-            <div class="watermark"><img src="CMCM.png" alt="Logotipo do Município" width="15" height="15"></div>
+            <div class="watermark"><img src="logo.png" alt="Logotipo do Município" width="15" height="15"></div>
             <div class="license-header">
-                <div class="logo-placeholder"><img src="CMCM.png" alt="Logotipo do Município" width="50" height="50"></div>
+                <div class="logo-placeholder"><img src="logo.png" alt="Logotipo do Município" width="50" height="50"></div>
                 <div class="municipality-info">
                     <h3>MUNICÍPIO DE MAPUTO</h3>
                     <h4>CONSELHO MUNICIPAL</h4>
                     <h5>PELOURO DE MOBILIDADE, TRANSPORTES E TRÂNSITO</h5>
                 </div>
-                <div class="license-number">${licenseType} Nº ${licenseNumber}</div>
+                <div class="license-number">${document.getElementById('licenseType').value} Nº ${document.getElementById('licenseNumber').value}</div>
             </div>
             <div class="license-details">
                 ${licenseDetailsHtml}
@@ -544,13 +799,13 @@ function generateLicense() {
         ${licenseBackHtml}
         <div class="payment-info">
             <h4>Informações de Pagamento</h4>
-            <p><strong>Forma de Pagamento:</strong> ${paymentType}</p>
-            <p><strong>Banco:</strong> ${bank}</p>
-            <p><strong>Conta:</strong> ${account}</p>
-            <p><strong>Valor:</strong> ${amount}</p>
-            <p><strong>Referência:</strong> ${reference}</p>
-            <p><strong>Contacto:</strong> ${contact}</p>
-            <p><strong>NUIT:</strong> ${nuit}</p>
+            <p><strong>Forma de Pagamento:</strong> ${document.getElementById('paymentType').value}</p>
+            <p><strong>Banco:</strong> ${document.getElementById('bank').value}</p>
+            <p><strong>Conta:</strong> ${document.getElementById('account').value}</p>
+            <p><strong>Valor:</strong> ${document.getElementById('amount').value}</p>
+            <p><strong>Referência:</strong> ${document.getElementById('reference').value}</p>
+            <p><strong>Contacto:</strong> ${document.getElementById('contact').value}</p>
+            <p><strong>NUIT:</strong> ${document.getElementById('nuit').value}</p>
         </div>`;
     
     preview.innerHTML = licenseTemplate;
@@ -559,11 +814,58 @@ function generateLicense() {
     qrcodeDiv.innerHTML = '';
     
     new QRCode(qrcodeDiv, {
-        text: `License: ${licenseNumber}\nOwner: ${ownerName}\nType: ${licenseType}`,
+        text: `License: ${document.getElementById('licenseNumber').value}\nOwner: ${document.getElementById('ownerName').value}\nType: ${document.getElementById('licenseType').value}`,
         width: 100,
         height: 100
     });
 }
+
+function removeSelectedVia(value) {
+    const viaSelect = document.getElementById('via');
+    const option = Array.from(viaSelect.options).find(opt => opt.value === value);
+    if (option) {
+        option.selected = false;
+    }
+    updateViaDisplay();
+    generateLicense(); // Update the license preview
+}
+
+function updateViaDisplay() {
+    const viaSelect = document.getElementById('via');
+    const viaListContainer = document.querySelector('.via-selection') || document.createElement('div');
+    viaListContainer.className = 'via-selection';
+    
+    const selectedVias = Array.from(viaSelect.selectedOptions);
+    
+    const viaList = document.createElement('ul');
+    viaList.className = 'via-list';
+    
+    selectedVias.forEach(option => {
+        const li = document.createElement('li');
+        li.className = 'via-item';
+        li.innerHTML = `
+            ${option.text}
+            <button class="remove-via" onclick="removeSelectedVia('${option.value}')">
+                Remover
+            </button>
+        `;
+        viaList.appendChild(li);
+    });
+    
+    viaListContainer.innerHTML = '';
+    viaListContainer.appendChild(viaList);
+    
+    // Insert after the via select element
+    if (!document.querySelector('.via-selection')) {
+        viaSelect.parentNode.insertBefore(viaListContainer, viaSelect.nextSibling);
+    }
+}
+
+// Add event listener to via select:
+document.getElementById('via').addEventListener('change', () => {
+    updateViaDisplay();
+    generateLicense();
+});
 
 function printLicense() {
     window.print();
@@ -659,7 +961,7 @@ function printPaymentInfo() {
                     <div class="copy-label">ORIGINAL</div>
                     <div class="payment-header">
                         <div class="logo-container">
-                            <img src="CMCM.png" alt="Logotipo do Município" width="60" height="60">
+                            <img src="logo.png" alt="Logotipo do Município" width="60" height="60">
                         </div>
                         <h3>MUNICÍPIO DE MAPUTO</h3>
                         <h4>CONSELHO MUNICIPAL</h4>
@@ -692,7 +994,7 @@ function printPaymentInfo() {
                     <div class="copy-label">CÓPIA</div>
                     <div class="payment-header">
                         <div class="logo-container">
-                            <img src="CMCM.png" alt="Logotipo do Município" width="60" height="60">
+                            <img src="logo.png" alt="Logotipo do Município" width="60" height="60">
                         </div>
                         <h3>MUNICÍPIO DE MAPUTO</h3>
                         <h4>CONSELHO MUNICIPAL</h4>
