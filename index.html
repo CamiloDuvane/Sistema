@@ -1,0 +1,50 @@
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Local</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Chat Local</h1>
+      <div id="connection-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Desconectado</span>
+      </div>
+      <div class="connection-buttons">
+        <button id="wifi-connect" class="connect-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+          </svg>
+          Conectar via Wi-Fi
+        </button>
+        <button id="bluetooth-connect" class="connect-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/>
+          </svg>
+          Conectar via Bluetooth
+        </button>
+      </div>
+    </header>
+
+    <main class="chat-area" id="chat-area">
+      <!-- Messages will be inserted here -->
+    </main>
+
+    <footer class="input-area">
+      <div class="message-form">
+        <input type="text" id="message-input" placeholder="Digite sua mensagem..." autocomplete="off">
+        <button id="send-button">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
